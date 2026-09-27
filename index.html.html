@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>연세대학교 현장 녹화 면접 연습</title>
+    <meta name="theme-color" content="#003876">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #app-container { width: 95%; max-width: 1024px; height: 90vh; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .header { background: #003876; color: white; padding: 15px 20px; text-align: center; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+        .content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; text-align: center; }
+        
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
+        
+        video { width: 100%; max-width: 720px; border-radius: 8px; background: #000; aspect-ratio: 16/9; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        .timer-box { font-size: 72px; font-weight: bold; color: #222; margin: 30px 0; font-variant-numeric: tabular-nums; }
+        .record-timer { color: #d32f2f; }
+        .instruction { font-size: 24px; margin-bottom: 20px; font-weight: bold; color: #333; word-break: keep-all; }
+        .sub-instruction { font-size: 16px; color: #666; margin-bottom: 30px; }
+        
+        .question-box { -webkit-user-select: text; user-select: text; touch-action: manipulation; width: 90%; max-width: 800px; min-height: 150px; background: #f8f9fa; border: 1px solid #ddd; padding: 30px; border-radius: 8px; font-size: 18px; margin-bottom: 20px; overflow-y: auto; text-align: left; line-height: 1.6; }
+        
+        .btn { background: #003876; color: white; border: none; padding: 18px 40px; font-size: 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin: 10px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,56,118,0.3); }
+        .btn:hover { background: #002855; transform: translateY(-2px); }
+        .btn-outline { background: white; color: #003876; border: 2px solid #003876; }
+        .btn-outline:hover { background: #f0f4f8; }
+        
+        .recording-indicator { position: absolute; top: 30px; right: 40px; color: #d32f2f; font-weight: bold; font-size: 24px; display: none; align-items: center; background: rgba(255,255,255,0.9); padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .recording-indicator .dot { width: 14px; height: 14px; background: #d32f2f; border-radius: 50%; margin-right: 10px; animation: blink 1s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0;} 100% {opacity: 1;} }
+
+        /* ===== Galaxy Tab / tablet optimization ===== */
+        html, body {
+            width: 100%;
+            min-width: 0;
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+            overscroll-behavior: none;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, a, input, [contenteditable="true"] {
+            touch-action: manipulation;
+        }
+
+        #app-container {
+            width: min(100%, 1100px);
+            height: 100dvh;
+            max-height: 100dvh;
+            margin: 0 auto;
+            border-radius: 0;
+        }
+
+        .header {
+            min-height: 58px;
+            padding: 10px clamp(12px, 3vw, 24px);
+            font-size: clamp(16px, 2.3vw, 20px);
+            gap: 10px;
+        }
+
+        .header span:last-child {
+            font-size: clamp(11px, 1.7vw, 14px) !important;
+            white-space: nowrap;
+        }
+
+        .content {
+            min-height: 0;
+            padding: clamp(12px, 3vw, 28px);
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen {
+            min-height: 100%;
+            justify-content: center;
+            padding: 8px 0;
+            gap: 8px;
+        }
+
+        .instruction {
+            font-size: clamp(19px, 3.2vw, 28px);
+            line-height: 1.35;
+            margin-bottom: 8px;
+        }
+
+        .sub-instruction {
+            font-size: clamp(14px, 2.2vw, 17px);
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            min-height: 54px;
+            min-width: 180px;
+            padding: 14px 24px;
+            margin: 7px;
+            font-size: clamp(16px, 2.5vw, 20px);
+            border-radius: 10px;
+            touch-action: manipulation;
+        }
+
+        video {
+            display: block;
+            width: min(100%, 820px);
+            max-height: min(56vh, 560px);
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            background: #000;
+        }
+
+        #video-preview,
+        #video-record-preview {
+            max-height: min(52vh, 520px);
+        }
+
+        #video-playback {
+            max-height: min(55vh, 560px);
+        }
+
+        .timer-box {
+            font-size: clamp(48px, 9vw, 76px);
+            line-height: 1;
+            margin: 14px 0;
+        }
+
+        .question-box {
+            width: min(94%, 850px);
+            min-height: 140px;
+            max-height: 45vh;
+            padding: clamp(18px, 3vw, 30px);
+            font-size: clamp(16px, 2.3vw, 19px);
+            line-height: 1.65;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .recording-indicator {
+            position: fixed;
+            top: max(70px, env(safe-area-inset-top));
+            right: max(14px, env(safe-area-inset-right));
+            z-index: 20;
+            font-size: clamp(16px, 2.5vw, 22px);
+        }
+
+        #screen-review > div:last-child {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Galaxy Tab portrait */
+        @media (orientation: portrait) {
+            .header {
+                align-items: flex-start;
+            }
+
+            .header span:first-child {
+                line-height: 1.25;
+            }
+
+            .header span:last-child {
+                display: none;
+            }
+
+            .screen {
+                justify-content: center;
+            }
+
+            video {
+                width: 100%;
+                max-height: 42vh;
+            }
+
+            #video-playback {
+                max-height: 42vh;
+            }
+
+            .question-box {
+                max-height: 38vh;
+            }
+        }
+
+        /* Galaxy Tab landscape */
+        @media (orientation: landscape) and (max-height: 700px) {
+            .header {
+                min-height: 48px;
+                padding: 7px 16px;
+            }
+
+            .content {
+                padding: 8px 18px;
+            }
+
+            .screen {
+                padding: 2px 0;
+                gap: 3px;
+            }
+
+            .instruction {
+                font-size: clamp(17px, 2.6vw, 24px);
+                margin-bottom: 3px;
+            }
+
+            .sub-instruction {
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
+
+            video {
+                max-height: 48vh;
+            }
+
+            #video-preview,
+            #video-record-preview,
+            #video-playback {
+                max-height: 45vh;
+            }
+
+            .timer-box {
+                font-size: clamp(40px, 8vw, 62px);
+                margin: 5px 0;
+            }
+
+            .btn {
+                min-height: 46px;
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            .question-box {
+                max-height: 38vh;
+                min-height: 90px;
+                padding: 14px 20px;
+            }
+        }
+
+        /* Prevent the iOS/Samsung browser from adding an unexpected active highlight */
+        @media (hover: none) and (pointer: coarse) {
+            .btn:hover {
+                transform: none;
+                background: #003876;
+            }
+
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .btn-outline:active {
+                background: #f0f4f8;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div class="header">
+        <span>연세대학교 현장 녹화 면접 시뮬레이터</span>
+        <span style="font-size: 14px; font-weight: normal;">기회균형전형 패드 환경 연습</span>
+    </div>
+    <div class="content">
+        
+        <!-- 화면 1: 시작 및 권한 허용 -->
+        <div id="screen-start" class="screen active">
+            <div class="instruction">비대면 현장 녹화 면접 연습을 시작합니다.</div>
+            <div class="sub-instruction">
+                실제 면접과 동일하게 <strong>제시문 숙지 8분</strong>, <strong>답변 5분</strong>으로 진행됩니다.<br>
+                시작하려면 카메라와 마이크 권한을 허용해주세요.
+            </div>
+            <div id="security-status" style="margin:12px 0 8px; padding:12px 16px; border-radius:10px; background:#f4f6f8; color:#555; font-size:14px; line-height:1.5;">
+                HTTPS 및 카메라/마이크 환경을 확인하고 있습니다…
+            </div>
+            <button class="btn" onclick="requestPermissions()">카메라/마이크 허용 및 준비</button>
+            <button class="btn btn-outline" type="button" onclick="checkDeviceEnvironment()">환경 다시 확인</button>
+        </div>
+
+        <!-- 화면 2: 장비 확인 및 대기 -->
+        <div id="screen-standby" class="screen">
+            <div class="instruction">화면과 소리가 잘 입력되는지 확인하세요.</div>
+            <video id="video-preview" autoplay muted playsinline webkit-playsinline></video>
+            <div id="device-status" style="width:min(94%,820px); margin-top:10px; padding:10px 14px; border-radius:10px; background:#f4f6f8; color:#555; font-size:14px; line-height:1.5;">
+                카메라와 마이크 상태를 확인합니다.
+            </div>
+            <div class="sub-instruction" style="margin-top:20px;">
+                영상에 문제가 없다면 연습을 시작합니다.<br>
+                <span style="font-size:0.9em;color:#777;">※ 갤럭시 탭은 가로 화면에서 사용하면 가장 편리합니다.</span>
+            </div>
+            <button class="btn" onclick="startPreparation()">실전 면접 시작 (8분 타이머)</button>
+        </div>
+
+        <!-- 화면 3: 제시문 숙지 시간 (8분) -->
+        <div id="screen-prep" class="screen">
+            <div class="instruction">지문 숙지 시간입니다. 화면에 보이는 제시문을 읽어주세요.</div>
+            <div class="question-box" contenteditable="true">
+                <strong>[제시문 / 질문 입력란]</strong><br><br>
+                💡 여기에 연습할 제시문이나 예상 질문을 미리 복사해서 붙여넣고 연습할 수 있습니다.<br>
+                (이 박스를 클릭하면 텍스트를 직접 수정할 수 있습니다.)<br><br>
+                8분의 시간이 종료되면 자동으로 녹화가 진행됩니다.
+            </div>
+            <div class="timer-box" id="prep-timer">08:00</div>
+            <button class="btn btn-outline" onclick="skipToRecording()">준비 완료 (조기 녹화 시작)</button>
+        </div>
+
+        <!-- 화면 4: 답변 녹화 시간 (5분) -->
+        <div id="screen-record" class="screen">
+            <div class="recording-indicator" id="rec-indicator"><div class="dot"></div>REC</div>
+            <div class="instruction">녹화가 시작되었습니다. 답변을 진행해주세요.</div>
+            <video id="video-record-preview" autoplay muted playsinline webkit-playsinline></video>
+            <div class="timer-box record-timer" id="record-timer">05:00</div>
+            <button class="btn btn-outline" onclick="stopRecordingEarly()">답변 종료 (조기 종료)</button>
+        </div>
+
+        <!-- 화면 5: 녹화 완료 및 확인 -->
+        <div id="screen-review" class="screen">
+            <div class="instruction">수고하셨습니다. 녹화된 영상을 확인해보세요.</div>
+            <video id="video-playback" controls playsinline webkit-playsinline></video>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+                <a id="download-link" class="btn" style="text-decoration: none;">내 답변 다운로드</a>
+                <button class="btn btn-outline" onclick="location.reload()">처음부터 다시 연습</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let stream;
+    let mediaRecorder;
+    let recordedChunks = [];
+    
+    const PREP_TIME = 8 * 60; // 지문 숙지 8분
+    const RECORD_TIME = 5 * 60; // 답변 시간 5분
+    
+    let timerInterval;
+    
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    async function checkDeviceEnvironment() {
+        if (!window.isSecureContext && location.hostname !== 'localhost' &&
+            location.hostname !== '127.0.0.1' && location.hostname !== '[::1]') {
+            setStatus('security-status',
+                '⚠️ HTTPS가 아닌 주소입니다. 카메라/마이크 녹화를 위해 https:// 주소로 접속해주세요.', 'err');
+            return false;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setStatus('security-status',
+                '⚠️ 이 브라우저에서는 카메라/마이크 기능을 사용할 수 없습니다. 최신 Chrome 또는 Samsung Internet을 사용해주세요.', 'err');
+            return false;
+        }
+
+        let camera = '', microphone = '';
+        try {
+            if (navigator.permissions && navigator.permissions.query) {
+                const cam = await navigator.permissions.query({name:'camera'}).catch(() => null);
+                const mic = await navigator.permissions.query({name:'microphone'}).catch(() => null);
+                camera = cam ? cam.state : '';
+                microphone = mic ? mic.state : '';
+            }
+        } catch (e) {}
+
+        let msg = '🔒 HTTPS 보안 연결 확인됨';
+        if (camera || microphone) msg += ' · 카메라: ' + (camera || '확인 전') + ' · 마이크: ' + (microphone || '확인 전');
+        setStatus('security-status', msg, 'ok');
+        return true;
+    }
+
+    function setStatus(id, message, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = message;
+        const map = {
+            ok: ['#e8f5e9','#1b5e20'],
+            warn: ['#fff8e1','#795548'],
+            err: ['#ffebee','#b71c1c'],
+            info: ['#e3f2fd','#0d47a1']
+        };
+        const s = map[type] || map.info;
+        el.style.background = s[0];
+        el.style.color = s[1];
+    }
+
+    function friendlyMediaError(err) {
+        const name = err && err.name;
+        const messages = {
+            NotAllowedError: '카메라 또는 마이크 권한이 차단되었습니다. 브라우저의 사이트 권한에서 카메라와 마이크를 "허용"으로 바꾼 뒤 다시 시도해주세요.',
+            NotFoundError: '사용 가능한 카메라 또는 마이크를 찾지 못했습니다.',
+            NotReadableError: '카메라 또는 마이크가 다른 앱에서 사용 중일 수 있습니다. 다른 카메라 앱을 종료해주세요.',
+            OverconstrainedError: '현재 기기에서 요청한 카메라 설정을 사용할 수 없습니다. 다시 시도해주세요.',
+            SecurityError: '브라우저 보안 설정 때문에 카메라/마이크 사용이 차단되었습니다. HTTPS 주소인지 확인해주세요.'
+        };
+        return messages[name] || '카메라/마이크 접근 중 문제가 발생했습니다.' + (name ? ' (' + name + ')' : '');
+    }
+
+    async function requestPermissions() {
+        if (!(await checkDeviceEnvironment())) return;
+
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+
+        setStatus('security-status', '카메라와 마이크 권한을 요청합니다. 브라우저 팝업에서 "허용"을 눌러주세요.', 'info');
+
+        try {
+            const preferred = {
+                video: {
+                    facingMode: {ideal:'user'},
+                    width: {ideal:1280, max:1920},
+                    height: {ideal:720, max:1080}
+                },
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            };
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(preferred);
+            } catch (e) {
+                stream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+            }
+
+            const tracks = stream.getTracks();
+            if (!tracks.some(t => t.kind === 'video') || !tracks.some(t => t.kind === 'audio')) {
+                throw new Error('카메라와 마이크가 모두 연결되지 않았습니다.');
+            }
+
+            const preview = document.getElementById('video-preview');
+            const recordPreview = document.getElementById('video-record-preview');
+            preview.srcObject = stream;
+            recordPreview.srcObject = stream;
+            await Promise.allSettled([preview.play(), recordPreview.play()]);
+
+            setStatus('security-status', '✅ 카메라와 마이크가 정상적으로 연결되었습니다.', 'ok');
+            setStatus('device-status', '✅ 카메라와 마이크 정상 · 면접 시작 준비가 완료되었습니다.', 'ok');
+            switchScreen('screen-standby');
+        } catch (err) {
+            console.error(err);
+            setStatus('security-status', '❌ ' + friendlyMediaError(err), 'err');
+            alert(friendlyMediaError(err));
+        }
+    }
+
+    function startTimer(duration, displayElement, onComplete) {
+        let timer = duration;
+        clearInterval(timerInterval);
+        
+        function updateDisplay() {
+            let minutes = parseInt(timer / 60, 10);
+            let seconds = parseInt(timer % 60, 10);
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            displayElement.textContent = minutes + ":" + seconds;
+            
+            if (--timer < 0) {
+                clearInterval(timerInterval);
+                onComplete();
+            }
+        }
+        
+        updateDisplay();
+        timerInterval = setInterval(updateDisplay, 1000);
+    }
+
+    function startPreparation() {
+        switchScreen('screen-prep');
+        startTimer(PREP_TIME, document.getElementById('prep-timer'), startRecording);
+    }
+
+    function skipToRecording() {
+        clearInterval(timerInterval);
+        startRecording();
+    }
+
+    function getSupportedRecordingOptions() {
+        if (!window.MediaRecorder) return null;
+        const candidates = [
+            {mimeType:'video/webm;codecs=vp9,opus', ext:'webm'},
+            {mimeType:'video/webm;codecs=vp8,opus', ext:'webm'},
+            {mimeType:'video/webm', ext:'webm'},
+            {mimeType:'video/mp4;codecs=h264,aac', ext:'mp4'},
+            {mimeType:'video/mp4', ext:'mp4'}
+        ];
+        for (const c of candidates) {
+            try {
+                if (MediaRecorder.isTypeSupported(c.mimeType)) return c;
+            } catch(e) {}
+        }
+        return {};
+    }
+
+    function startRecording() {
+        if (!stream) {
+            alert('카메라와 마이크가 연결되지 않았습니다. 먼저 권한을 허용해주세요.');
+            switchScreen('screen-start');
+            return;
+        }
+        if (!window.MediaRecorder) {
+            alert('이 브라우저는 영상 녹화를 지원하지 않습니다. 최신 Chrome 또는 Samsung Internet을 사용해주세요.');
+            return;
+        }
+
+        switchScreen('screen-record');
+        document.getElementById('rec-indicator').style.display = 'flex';
+        recordedChunks = [];
+
+        const option = getSupportedRecordingOptions();
+        let recorderOptions = {};
+        if (option && option.mimeType) recorderOptions.mimeType = option.mimeType;
+
+        try {
+            mediaRecorder = new MediaRecorder(stream, recorderOptions);
+        } catch (err) {
+            console.error(err);
+            document.getElementById('rec-indicator').style.display = 'none';
+            alert('이 기기에서 지원되는 녹화 형식을 찾지 못했습니다. 최신 Chrome 또는 Samsung Internet을 사용해주세요.');
+            return;
+        }
+
+        mediaRecorder.ondataavailable = function(e) {
+            if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+        mediaRecorder.onerror = function(e) {
+            console.error(e);
+            alert('녹화 중 오류가 발생했습니다. 다시 시도해주세요.');
+        };
+        mediaRecorder.onstop = showReview;
+
+        try {
+            mediaRecorder.start(1000);
+        } catch(e) {
+            mediaRecorder.start();
+        }
+
+        const video = document.getElementById('video-record-preview');
+        video.srcObject = stream;
+        video.play().catch(() => {});
+        startTimer(RECORD_TIME, document.getElementById('record-timer'), stopRecordingEarly);
+    }
+
+    function stopRecordingEarly() {
+        clearInterval(timerInterval);
+        if(mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
+    }
+
+    function showReview() {
+        switchScreen('screen-review');
+        document.getElementById('rec-indicator').style.display = 'none';
+
+        if (stream) stream.getTracks().forEach(track => track.stop());
+
+        if (!recordedChunks.length) {
+            alert('녹화된 영상 데이터가 없습니다. 다시 시도해주세요.');
+            return;
+        }
+
+        const actualType = (mediaRecorder && mediaRecorder.mimeType) ||
+            (recordedChunks.find(c => c.type) || {}).type || 'video/webm';
+
+        const blob = new Blob(recordedChunks, {type: actualType});
+        const videoURL = URL.createObjectURL(blob);
+        const playback = document.getElementById('video-playback');
+        playback.src = videoURL;
+        playback.load();
+
+        const ext = actualType.toLowerCase().includes('mp4') ? 'mp4' : 'webm';
+        const link = document.getElementById('download-link');
+        link.href = videoURL;
+        link.download = '연세대_면접연습_' + Date.now() + '.' + ext;
+        link.setAttribute('download', link.download);
+    }
+        // ===== Galaxy Tab orientation / viewport optimization =====
+        function adjustForTablet() {
+            // Force a layout recalculation after Samsung Internet / Chrome rotates the device.
+            document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+            const activeVideo = document.querySelector('.screen.active video');
+            if (activeVideo && activeVideo.srcObject) {
+                activeVideo.play().catch(() => {});
+            }
+        }
+
+        window.addEventListener('resize', adjustForTablet, { passive: true });
+        window.addEventListener('orientationchange', function () {
+            setTimeout(adjustForTablet, 250);
+        }, { passive: true });
+
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                const activeVideo = document.querySelector('.screen.active video');
+                if (activeVideo && activeVideo.srcObject) {
+                    activeVideo.play().catch(() => {});
+                }
+            }
+        });
+
+        adjustForTablet();
+
+        window.addEventListener('online', () => checkDeviceEnvironment());
+        window.addEventListener('offline', () => {
+            const el = document.getElementById('security-status');
+            if (el) setStatus('security-status', '⚠️ 인터넷 연결이 끊어졌습니다. 페이지를 새로고침하지 마세요.', 'warn');
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+            checkDeviceEnvironment();
+        });
+
+</script>
+
+</body>
+</html>
